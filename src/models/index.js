@@ -1,43 +1,110 @@
-'use strict';
+import { sequelize } from '../config/database.js';
+import User from './User.js';
+import Driver from './Driver.js';
+import Vehicle from './Vehicle.js';
+import Booking from './Booking.js';
+import Payment from './Payment.js';
 
-const fs = require('fs');
-const path = require('path');
-const Sequelize = require('sequelize');
-const process = require('process');
-const basename = path.basename(__filename);
-const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/../config/config.json')[env];
-const db = {};
+// Define associations
 
-let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
-} else {
-  sequelize = new Sequelize(config.database, config.username, config.password, config);
-}
-
-fs
-  .readdirSync(__dirname)
-  .filter(file => {
-    return (
-      file.indexOf('.') !== 0 &&
-      file !== basename &&
-      file.slice(-3) === '.js' &&
-      file.indexOf('.test.js') === -1
-    );
-  })
-  .forEach(file => {
-    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
-    db[model.name] = model;
-  });
-
-Object.keys(db).forEach(modelName => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-  }
+// User associations
+User.hasOne(Driver, {
+  foreignKey: 'user_id',
+  as: 'driverProfile',
+  onDelete: 'CASCADE',
 });
 
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
+User.hasMany(Booking, {
+  foreignKey: 'customer_id',
+  as: 'customerBookings',
+  onDelete: 'CASCADE',
+});
 
-module.exports = db;
+User.hasMany(Payment, {
+  foreignKey: 'customer_id',
+  as: 'payments',
+  onDelete: 'CASCADE',
+});
+
+// Driver associations
+Driver.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user',
+});
+
+Driver.hasMany(Vehicle, {
+  foreignKey: 'driver_id',
+  as: 'vehicles',
+  onDelete: 'CASCADE',
+});
+
+Driver.hasMany(Booking, {
+  foreignKey: 'driver_id',
+  as: 'driverBookings',
+});
+
+Driver.hasMany(Payment, {
+  foreignKey: 'driver_id',
+  as: 'earnings',
+});
+
+// Vehicle associations
+Vehicle.belongsTo(Driver, {
+  foreignKey: 'driver_id',
+  as: 'driver',
+});
+
+Vehicle.hasMany(Booking, {
+  foreignKey: 'vehicle_id',
+  as: 'bookings',
+});
+
+// Booking associations
+Booking.belongsTo(User, {
+  foreignKey: 'customer_id',
+  as: 'customer',
+});
+
+Booking.belongsTo(Driver, {
+  foreignKey: 'driver_id',
+  as: 'driver',
+});
+
+Booking.belongsTo(Vehicle, {
+  foreignKey: 'vehicle_id',
+  as: 'vehicle',
+});
+
+Booking.hasOne(Payment, {
+  foreignKey: 'booking_id',
+  as: 'payment',
+  onDelete: 'CASCADE',
+});
+
+// Payment associations
+Payment.belongsTo(Booking, {
+  foreignKey: 'booking_id',
+  as: 'booking',
+});
+
+Payment.belongsTo(User, {
+  foreignKey: 'customer_id',
+  as: 'customer',
+});
+
+Payment.belongsTo(Driver, {
+  foreignKey: 'driver_id',
+  as: 'driver',
+});
+
+const models = {
+  User,
+  Driver,
+  Vehicle,
+  Booking,
+  Payment,
+  sequelize,
+};
+
+export default models;
+export { User, Driver, Vehicle, Booking, Payment, sequelize };
