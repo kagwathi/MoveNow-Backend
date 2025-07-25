@@ -11,7 +11,7 @@ dotenv.config();
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 // // Import routes
-// import authRoutes from './routes/auth';
+import authRoutes from './routes/authRoutes.js';
 // import userRoutes from './routes/users';
 // import bookingRoutes from './routes/bookings';
 // import driverRoutes from './routes/drivers';
@@ -56,7 +56,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
-// app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 // app.use('/api/users', userRoutes);
 // app.use('/api/bookings', bookingRoutes);
 // app.use('/api/drivers', driverRoutes);
