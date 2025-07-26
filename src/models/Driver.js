@@ -44,24 +44,33 @@ const Driver = sequelize.define(
       allowNull: false,
       defaultValue: 0,
       validate: {
-        min: { args: 0, msg: 'Experience years cannot be negative' },
-        max: { args: 50, msg: 'Experience years seems unrealistic' },
+        min: {
+          args: [0],
+          msg: 'Experience years cannot be negative',
+        },
+        max: {
+          args: [50],
+          msg: 'Experience years seems unrealistic',
+        },
+        isInt: {
+          msg: 'Experience years must be a whole number',
+        },
       },
     },
     current_location_lat: {
       type: DataTypes.DECIMAL(10, 8),
       allowNull: true,
       validate: {
-        min: { args: -90, msg: 'Invalid latitude' },
-        max: { args: 90, msg: 'Invalid latitude' },
+        min: { args: [-90], msg: 'Invalid latitude' },
+        max: { args: [90], msg: 'Invalid latitude' },
       },
     },
     current_location_lng: {
       type: DataTypes.DECIMAL(11, 8),
       allowNull: true,
       validate: {
-        min: { args: -180, msg: 'Invalid longitude' },
-        max: { args: 180, msg: 'Invalid longitude' },
+        min: { args: [-180], msg: 'Invalid longitude' },
+        max: { args: [180], msg: 'Invalid longitude' },
       },
     },
     current_address: {
@@ -76,17 +85,35 @@ const Driver = sequelize.define(
       type: DataTypes.DECIMAL(3, 2),
       defaultValue: 0.0,
       validate: {
-        min: { args: 0, msg: 'Rating cannot be negative' },
-        max: { args: 5, msg: 'Rating cannot exceed 5.0' },
+        min: {
+          args: [0],
+          msg: 'Rating cannot be negative',
+        },
+        max: {
+          args: [5],
+          msg: 'Rating cannot exceed 5.0',
+        },
       },
     },
     total_ratings: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
+      validate: {
+        min: {
+          args: [0],
+          msg: 'Total ratings cannot be negative',
+        },
+      },
     },
     total_trips: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
+      validate: {
+        min: {
+          args: [0],
+          msg: 'Total trips cannot be negative',
+        },
+      },
     },
     is_approved: {
       type: DataTypes.BOOLEAN,
@@ -111,6 +138,30 @@ const Driver = sequelize.define(
   },
   {
     tableName: 'drivers',
+    // Add hooks to ensure proper defaults
+    hooks: {
+      beforeValidate: (driver) => {
+        // Ensure numeric fields have proper defaults
+        if (
+          driver.experience_years === null ||
+          driver.experience_years === undefined
+        ) {
+          driver.experience_years = 0;
+        }
+        if (driver.rating === null || driver.rating === undefined) {
+          driver.rating = 0.0;
+        }
+        if (
+          driver.total_ratings === null ||
+          driver.total_ratings === undefined
+        ) {
+          driver.total_ratings = 0;
+        }
+        if (driver.total_trips === null || driver.total_trips === undefined) {
+          driver.total_trips = 0;
+        }
+      },
+    },
   }
 );
 

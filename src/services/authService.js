@@ -129,12 +129,22 @@ class AuthService {
         throw new Error('License number already registered');
       }
 
-      // Create driver profile
+      // Create driver profile with explicit values
       const driver = await Driver.create({
         user_id: userId,
         license_number: driverData.license_number,
         license_expiry: driverData.license_expiry,
-        experience_years: driverData.experience_years || 0,
+        experience_years: parseInt(driverData.experience_years) || 0,
+        current_location_lat: null,
+        current_location_lng: null,
+        current_address: null,
+        availability_status: 'offline',
+        rating: 0.0,
+        total_ratings: 0,
+        total_trips: 0,
+        is_approved: false,
+        approval_date: null,
+        documents_verified: false,
       });
 
       return driver;

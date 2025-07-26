@@ -14,8 +14,8 @@ import { errorHandler, notFound } from './middleware/errorHandler.js';
 import authRoutes from './routes/authRoutes.js';
 import bookingRoutes from './routes/bookings.js';
 import pricingRoutes from './routes/pricing.js';
+import driverRoutes from './routes/drivers.js';
 // import userRoutes from './routes/users';
-// import driverRoutes from './routes/drivers';
 // import adminRoutes from './routes/admin';
 
 const app = express();
@@ -60,8 +60,8 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/pricing', pricingRoutes);
+app.use('/api/drivers', driverRoutes);
 // app.use('/api/users', userRoutes);
-// app.use('/api/drivers', driverRoutes);
 // app.use('/api/admin', adminRoutes);
 
 // Catch 404 and forward to error handler

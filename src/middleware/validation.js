@@ -96,10 +96,12 @@ export const validateDriverRegistration = [
 
   body('license_expiry')
     .isISO8601()
-    .withMessage('Please provide a valid license expiry date')
+    .withMessage('Please provide a valid license expiry date (YYYY-MM-DD)')
     .custom((value) => {
       const expiryDate = new Date(value);
       const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset time to start of day
+
       if (expiryDate <= today) {
         throw new Error('License expiry date must be in the future');
       }
@@ -107,8 +109,10 @@ export const validateDriverRegistration = [
     }),
 
   body('experience_years')
+    .optional()
     .isInt({ min: 0, max: 50 })
-    .withMessage('Experience years must be between 0-50'),
+    .withMessage('Experience years must be a number between 0-50')
+    .toInt(), // Convert to integer
 
   handleValidationErrors,
 ];
@@ -281,6 +285,58 @@ export const validateBookingCancellation = [
     .trim()
     .isLength({ max: 500 })
     .withMessage('Cancellation reason must be less than 500 characters'),
+
+  handleValidationErrors,
+];
+
+// Job status update validation
+export const validateJobStatusUpdate = [
+  body('status')
+    .isIn([
+      'driver_en_route',
+      'arrived_pickup',
+      'loading',
+      'in_transit',
+      'arrived_destination',
+      'unloading',
+      'completed',
+      'cancelled',
+    ])
+    .withMessage('Invalid job status'),
+
+  body('cancellation_reason')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Cancellation reason must be less than 500 characters'),
+
+  handleValidationErrors,
+];
+
+// Driver location update validation
+export const validateLocationUpdate = [
+  body('latitude')
+    .isFloat({ min: -90, max: 90 })
+    .withMessage('Latitude must be between -90 and 90'),
+
+  body('longitude')
+    .isFloat({ min: -180, max: 180 })
+    .withMessage('Longitude must be between -180 and 180'),
+
+  body('address')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Address must be less than 500 characters'),
+
+  handleValidationErrors,
+];
+
+// Availability status validation
+export const validateAvailabilityStatus = [
+  body('status')
+    .isIn(['available', 'busy', 'offline'])
+    .withMessage('Status must be: available, busy, or offline'),
 
   handleValidationErrors,
 ];
