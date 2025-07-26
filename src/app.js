@@ -10,10 +10,11 @@ dotenv.config();
 // Import middleware
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
-// // Import routes
+// Import routes
 import authRoutes from './routes/authRoutes.js';
+import bookingRoutes from './routes/bookings.js';
+import pricingRoutes from './routes/pricing.js';
 // import userRoutes from './routes/users';
-// import bookingRoutes from './routes/bookings';
 // import driverRoutes from './routes/drivers';
 // import adminRoutes from './routes/admin';
 
@@ -57,8 +58,9 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/pricing', pricingRoutes);
 // app.use('/api/users', userRoutes);
-// app.use('/api/bookings', bookingRoutes);
 // app.use('/api/drivers', driverRoutes);
 // app.use('/api/admin', adminRoutes);
 

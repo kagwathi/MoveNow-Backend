@@ -136,3 +136,151 @@ export const validatePasswordChange = [
 
   handleValidationErrors,
 ];
+
+// Pricing estimate validation
+export const validatePricingEstimate = [
+  body('pickup_lat')
+    .isFloat({ min: -90, max: 90 })
+    .withMessage('Pickup latitude must be between -90 and 90'),
+
+  body('pickup_lng')
+    .isFloat({ min: -180, max: 180 })
+    .withMessage('Pickup longitude must be between -180 and 180'),
+
+  body('dropoff_lat')
+    .isFloat({ min: -90, max: 90 })
+    .withMessage('Dropoff latitude must be between -90 and 90'),
+
+  body('dropoff_lng')
+    .isFloat({ min: -180, max: 180 })
+    .withMessage('Dropoff longitude must be between -180 and 180'),
+
+  body('pickup_date')
+    .isISO8601()
+    .withMessage('Please provide a valid pickup date (YYYY-MM-DD)'),
+
+  body('pickup_time')
+    .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .withMessage('Please provide a valid pickup time (HH:MM)'),
+
+  body('vehicle_type')
+    .optional()
+    .isIn(['pickup', 'small_truck', 'medium_truck', 'large_truck', 'van'])
+    .withMessage('Invalid vehicle type'),
+
+  body('load_type')
+    .optional()
+    .isIn([
+      'furniture',
+      'appliances',
+      'boxes',
+      'electronics',
+      'fragile',
+      'other',
+    ])
+    .withMessage('Invalid load type'),
+
+  body('requires_helpers')
+    .optional()
+    .isBoolean()
+    .withMessage('Requires helpers must be true or false'),
+
+  body('helpers_count')
+    .optional()
+    .isInt({ min: 0, max: 5 })
+    .withMessage('Helpers count must be between 0 and 5'),
+
+  handleValidationErrors,
+];
+
+// Booking creation validation
+export const validateBookingCreation = [
+  body('pickup_address')
+    .trim()
+    .isLength({ min: 10, max: 500 })
+    .withMessage('Pickup address must be between 10-500 characters'),
+
+  body('dropoff_address')
+    .trim()
+    .isLength({ min: 10, max: 500 })
+    .withMessage('Dropoff address must be between 10-500 characters'),
+
+  body('pickup_lat')
+    .isFloat({ min: -90, max: 90 })
+    .withMessage('Pickup latitude must be between -90 and 90'),
+
+  body('pickup_lng')
+    .isFloat({ min: -180, max: 180 })
+    .withMessage('Pickup longitude must be between -180 and 180'),
+
+  body('dropoff_lat')
+    .isFloat({ min: -90, max: 90 })
+    .withMessage('Dropoff latitude must be between -90 and 90'),
+
+  body('dropoff_lng')
+    .isFloat({ min: -180, max: 180 })
+    .withMessage('Dropoff longitude must be between -180 and 180'),
+
+  body('pickup_date')
+    .isISO8601()
+    .withMessage('Please provide a valid pickup date (YYYY-MM-DD)'),
+
+  body('pickup_time')
+    .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .withMessage('Please provide a valid pickup time (HH:MM)'),
+
+  body('vehicle_type_required')
+    .isIn(['pickup', 'small_truck', 'medium_truck', 'large_truck', 'van'])
+    .withMessage('Invalid vehicle type'),
+
+  body('load_type')
+    .isIn([
+      'furniture',
+      'appliances',
+      'boxes',
+      'electronics',
+      'fragile',
+      'other',
+    ])
+    .withMessage('Invalid load type'),
+
+  body('load_description')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Load description must be less than 1000 characters'),
+
+  body('estimated_weight')
+    .optional()
+    .isFloat({ min: 1, max: 50000 })
+    .withMessage('Estimated weight must be between 1-50000 kg'),
+
+  body('requires_helpers')
+    .optional()
+    .isBoolean()
+    .withMessage('Requires helpers must be true or false'),
+
+  body('helpers_count')
+    .optional()
+    .isInt({ min: 0, max: 5 })
+    .withMessage('Helpers count must be between 0 and 5'),
+
+  body('special_instructions')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Special instructions must be less than 1000 characters'),
+
+  handleValidationErrors,
+];
+
+// Booking cancellation validation
+export const validateBookingCancellation = [
+  body('cancellation_reason')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Cancellation reason must be less than 500 characters'),
+
+  handleValidationErrors,
+];
