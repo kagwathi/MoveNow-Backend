@@ -1,3 +1,4 @@
+import User from '../models/User.js';
 import AdminService from '../services/adminService.js';
 import PricingConfigService from '../services/pricingConfigService.js';
 
@@ -320,6 +321,63 @@ class AdminController {
       res.status(500).json({
         success: false,
         message: 'Failed to fetch system statistics',
+      });
+    }
+  }
+
+  static async deleteUser(req, res) {
+    try {
+      const { id } = req.params;
+      const { reason } = req.body;
+      const adminId = req.user.id;
+
+      console.log('Attempting to delete user:', id, 'by admin:', adminId);
+
+      const user = await User.findByPk(id);
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found',
+        });
+      }
+
+      // Prevent deleting admin users or self
+      if (user.role === 'admin') {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot delete admin user',
+        });
+      }
+
+      if (user.id === adminId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot delete your own account',
+        });
+      }
+
+      const userData = user.toJSON();
+      await user.destroy();
+
+      // Log the action
+      console.log(
+        `User ${id} (${
+          userData.email
+        }) deleted by admin ${adminId}. Reason: ${reason || 'None provided'}`
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'User deleted successfully',
+        data: { user: userData },
+      });
+    } catch (error) {
+      console.error('Delete user controller error:', error.message);
+      
+      res.status(500).json({
+        success: false,
+        message: 'Failed to delete user',
       });
     }
   }

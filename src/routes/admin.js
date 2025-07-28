@@ -20,6 +20,7 @@ router.get('/stats', AdminController.getSystemStats);
 
 // User management
 router.get('/users', AdminController.getAllUsers);
+router.delete('/users/:id', AdminController.deleteUser);
 router.put(
   '/users/:id/status',
   validateUserStatusToggle,
