@@ -1,23 +1,40 @@
 {
   "development": {
     "username": "root",
-    "password": null,
-    "database": "database_development",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "password": "password@2025!",
+    "database": "movenow_db",
+    "host": "localhost",
+    "port": 3306,
+    "dialect": "mysql",
+    "logging": true,
+    "define": {
+      "timestamps": true,
+      "underscored": true,
+      "freezeTableName": true
+    }
   },
   "test": {
     "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "password": "password@2025!",
+    "database": "movenow_test_db",
+    "host": "localhost",
+    "port": 3306,
+    "dialect": "mysql",
+    "logging": false
   },
   "production": {
     "username": "root",
-    "password": null,
-    "database": "database_production",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "password": "password@2025!",
+    "database": "movenow_db",
+    "host": "localhost",
+    "port": 3306,
+    "dialect": "mysql",
+    "logging": false,
+    "pool": {
+      "max": 10,
+      "min": 0,
+      "acquire": 30000,
+      "idle": 10000
+    }
   }
 }

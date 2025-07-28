@@ -7,12 +7,17 @@ import {
   validateDriverRegistration,
   validatePasswordChange,
 } from '../middleware/validation.js';
+import { adminCreationLimiter } from '../middleware/rateLimiting.js';
 
 const router = express.Router();
 
 // Public routes
 router.post('/register', validateRegistration, AuthController.register);
 router.post('/login', validateLogin, AuthController.login);
+
+// DEVELOPMENT ONLY: Admin creation endpoint
+// This endpoint is disabled in production and requires a secret key
+router.post('/create-admin', adminCreationLimiter, AuthController.createAdmin);
 
 // Protected routes (require authentication)
 router.use(authenticate); // All routes below require authentication
@@ -25,6 +30,7 @@ router.post(
   AuthController.changePassword
 );
 router.post('/logout', AuthController.logout);
+router.post('/refresh-token', AuthController.refreshToken);
 
 // Driver-specific routes
 router.post(

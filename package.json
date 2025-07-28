@@ -6,8 +6,11 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "migrate": "npx sequelize-cli db:migrate",
-    "seed": "npx sequelize-cli db:seed:all",
+    "db:create": "npx sequelize-cli db:create",
+    "db:migrate": "npx sequelize-cli db:migrate",
+    "db:rollback": "npx sequelize-cli db:migrate:undo",
+    "db:reset": "node scripts/migrate.js reset",
+    "db:status": "npx sequelize-cli db:migrate:status",
     "test": "jest --experimental-vm-modules"
   },
   "repository": {

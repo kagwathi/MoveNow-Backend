@@ -11,12 +11,12 @@ dotenv.config();
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 // Import routes
-import authRoutes from './routes/authRoutes.js';
+import authRoutes from './routes/auth.js';
 import bookingRoutes from './routes/bookings.js';
 import pricingRoutes from './routes/pricing.js';
 import driverRoutes from './routes/drivers.js';
+import adminRoutes from './routes/admin.js';
 // import userRoutes from './routes/users';
-// import adminRoutes from './routes/admin';
 
 const app = express();
 
@@ -61,8 +61,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/pricing', pricingRoutes);
 app.use('/api/drivers', driverRoutes);
+app.use('/api/admin', adminRoutes);
 // app.use('/api/users', userRoutes);
-// app.use('/api/admin', adminRoutes);
 
 // Catch 404 and forward to error handler
 app.use(notFound);

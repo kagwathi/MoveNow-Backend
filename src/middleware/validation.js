@@ -340,3 +340,88 @@ export const validateAvailabilityStatus = [
 
   handleValidationErrors,
 ];
+
+// Driver approval validation
+export const validateDriverApproval = [
+  body('is_approved')
+    .isBoolean()
+    .withMessage('is_approved must be true or false'),
+
+  body('reason')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Reason must be less than 500 characters'),
+
+  handleValidationErrors,
+];
+
+// Booking status update validation (admin)
+export const validateAdminBookingStatusUpdate = [
+  body('status')
+    .isIn([
+      'pending',
+      'accepted',
+      'driver_assigned',
+      'driver_en_route',
+      'arrived_pickup',
+      'loading',
+      'in_transit',
+      'arrived_destination',
+      'unloading',
+      'completed',
+      'cancelled',
+    ])
+    .withMessage('Invalid booking status'),
+
+  body('reason')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Reason must be less than 500 characters'),
+
+  handleValidationErrors,
+];
+
+// Pricing configuration validation
+export const validatePricingConfig = [
+  body('base_rates')
+    .optional()
+    .isObject()
+    .withMessage('Base rates must be an object'),
+
+  body('load_multipliers')
+    .optional()
+    .isObject()
+    .withMessage('Load multipliers must be an object'),
+
+  body('time_multipliers')
+    .optional()
+    .isObject()
+    .withMessage('Time multipliers must be an object'),
+
+  body('helper_rate')
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('Helper rate must be a positive number'),
+
+  body('minimum_charge')
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('Minimum charge must be a positive number'),
+
+  handleValidationErrors,
+];
+
+// User status toggle validation
+export const validateUserStatusToggle = [
+  body('is_active').isBoolean().withMessage('is_active must be true or false'),
+
+  body('reason')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Reason must be less than 500 characters'),
+
+  handleValidationErrors,
+];

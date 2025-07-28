@@ -1,4 +1,5 @@
 import AuthService from '../services/authService.js';
+import { User } from '../models/index.js';
 
 class AuthController {
   // Register new user
@@ -210,6 +211,190 @@ class AuthController {
       res.status(500).json({
         success: false,
         message: 'Token refresh failed',
+      });
+    }
+  }
+
+  // Safe admin creation endpoint with multiple security layers
+  static async createAdmin(req, res) {
+    try {
+      // SECURITY LAYER 1: Environment check
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(404).json({ message: 'Not found' });
+      }
+
+      // SECURITY LAYER 2: Secret key requirement
+      const { admin_secret } = req.body;
+      const expectedSecret =
+        process.env.ADMIN_CREATION_SECRET || 'dev-only-secret-2025';
+
+      if (!admin_secret || admin_secret !== expectedSecret) {
+        return res.status(403).json({
+          success: false,
+          message: 'Invalid admin creation secret',
+        });
+      }
+
+      // SECURITY LAYER 3: Check if ANY admin already exists
+      const existingAdmin = await User.findOne({
+        where: { role: 'admin' },
+      });
+
+      if (existingAdmin) {
+        return res.status(409).json({
+          success: false,
+          message: 'Admin user already exists in the system',
+        });
+      }
+
+      // SECURITY LAYER 4: Rate limiting check (simple in-memory)
+      const clientIP = req.ip || req.connection.remoteAddress;
+      const attemptKey = `admin_creation_${clientIP}`;
+
+      // This would be better with Redis in production
+      if (!global.adminCreationAttempts) {
+        global.adminCreationAttempts = new Map();
+      }
+
+      const attempts = global.adminCreationAttempts.get(attemptKey) || 0;
+      if (attempts >= 3) {
+        return res.status(429).json({
+          success: false,
+          message: 'Too many admin creation attempts. Please try again later.',
+        });
+      }
+
+      // Increment attempts
+      global.adminCreationAttempts.set(attemptKey, attempts + 1);
+
+      // Get admin details from request or use defaults
+      const {
+        first_name = 'System',
+        last_name = 'Administrator',
+        email = 'admin@movenow.com',
+        phone = '254700000000',
+        password = 'Admin123!',
+      } = req.body;
+
+      // SECURITY LAYER 5: Validate admin email domain (optional)
+      const allowedDomains = process.env.ADMIN_EMAIL_DOMAINS?.split(',') || [
+        'movenow.com',
+      ];
+      const emailDomain = email.split('@')[1];
+
+      if (!allowedDomains.includes(emailDomain)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Admin email must use an approved domain',
+        });
+      }
+
+      // Check if specific admin email already exists
+      const existingUser = await User.findOne({
+        where: { email },
+      });
+
+      if (existingUser) {
+        return res.status(409).json({
+          success: false,
+          message: 'User with this email already exists',
+        });
+      }
+
+      // Create admin user
+      const adminUser = await User.create({
+        first_name,
+        last_name,
+        email,
+        phone,
+        password, // Will be hashed by model hook
+        role: 'admin',
+        is_verified: true,
+        is_active: true,
+      });
+
+      // SECURITY: Log admin creation (without sensitive data)
+      console.log(
+        `🔐 Admin user created: ${email} from IP: ${clientIP} at ${new Date().toISOString()}`
+      );
+
+      // Clear attempts on success
+      global.adminCreationAttempts.delete(attemptKey);
+
+      // SECURITY: Don't return sensitive information
+      res.status(201).json({
+        success: true,
+        message: 'Admin user created successfully',
+        data: {
+          id: adminUser.id,
+          email: adminUser.email,
+          role: adminUser.role,
+          created_at: adminUser.created_at,
+        },
+        // Only show credentials in development
+        ...(process.env.NODE_ENV === 'development' && {
+          login_info: {
+            email: adminUser.email,
+            note: 'Use the password you provided in the request',
+          },
+        }),
+      });
+    } catch (error) {
+      const clientIP = req.ip || req.connection.remoteAddress;
+      console.error(
+        `❌ Admin creation failed from IP: ${clientIP}:`,
+        error.message
+      );
+
+      res.status(500).json({
+        success: false,
+        message: 'Failed to create admin user',
+        // Only show error details in development
+        ...(process.env.NODE_ENV === 'development' && {
+          error: error.message,
+        }),
+      });
+    }
+  }
+
+  // Add this method to your existing AuthController class
+
+  // Logout (client-side token removal, server-side can implement token blacklisting)
+  static async logout(req, res) {
+    try {
+      // In a more advanced implementation, you might:
+      // 1. Add token to blacklist/revoked tokens table
+      // 2. Log the logout event for security auditing
+      // 3. Clear any server-side sessions
+      // 4. Invalidate refresh tokens
+
+      const userId = req.user?.id;
+      const userEmail = req.user?.email;
+
+      // Log the logout event (optional but recommended for security)
+      console.log(
+        `User logout: ${userEmail} (${userId}) at ${new Date().toISOString()}`
+      );
+
+      // Here you could add token to a blacklist table if implementing token blacklisting
+      // await TokenBlacklist.create({
+      //   token: req.headers.authorization?.split(' ')[1],
+      //   user_id: userId,
+      //   blacklisted_at: new Date()
+      // });
+
+      res.status(200).json({
+        success: true,
+        message: 'Logout successful',
+      });
+    } catch (error) {
+      console.error('Logout controller error:', error.message);
+
+      // Even if there's an error, we should still return success
+      // because the client will clear the token regardless
+      res.status(200).json({
+        success: true,
+        message: 'Logout completed',
       });
     }
   }
