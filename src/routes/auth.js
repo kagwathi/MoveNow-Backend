@@ -43,4 +43,23 @@ router.post(
 // Future routes
 router.post('/refresh-token', AuthController.refreshToken);
 
+router.get(
+  '/admin/profile',
+  authenticate,
+  authorize('admin'),
+  AuthController.getAdminProfile
+);
+router.put(
+  '/admin/profile',
+  authenticate,
+  authorize('admin'),
+  AuthController.updateAdminProfile
+);
+router.put(
+  '/admin/password',
+  authenticate,
+  authorize('admin'),
+  AuthController.changeAdminPassword
+);
+
 export default router;

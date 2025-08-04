@@ -449,44 +449,164 @@ class AuthController {
     }
   }
 
-  // Add this method to your existing AuthController class
-
-  // Logout (client-side token removal, server-side can implement token blacklisting)
-  static async logout(req, res) {
+  // Get admin profile (for admin settings page)
+  static async getAdminProfile(req, res) {
     try {
-      // In a more advanced implementation, you might:
-      // 1. Add token to blacklist/revoked tokens table
-      // 2. Log the logout event for security auditing
-      // 3. Clear any server-side sessions
-      // 4. Invalidate refresh tokens
-
-      const userId = req.user?.id;
-      const userEmail = req.user?.email;
-
-      // Log the logout event (optional but recommended for security)
-      console.log(
-        `User logout: ${userEmail} (${userId}) at ${new Date().toISOString()}`
-      );
-
-      // Here you could add token to a blacklist table if implementing token blacklisting
-      // await TokenBlacklist.create({
-      //   token: req.headers.authorization?.split(' ')[1],
-      //   user_id: userId,
-      //   blacklisted_at: new Date()
-      // });
+      const user = await AuthService.getUserProfile(req.user.id);
 
       res.status(200).json({
         success: true,
-        message: 'Logout successful',
+        data: { user },
       });
     } catch (error) {
-      console.error('Logout controller error:', error.message);
+      console.error('Get admin profile controller error:', error.message);
 
-      // Even if there's an error, we should still return success
-      // because the client will clear the token regardless
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch admin profile',
+      });
+    }
+  }
+
+  // Update admin profile (for admin settings page)
+  static async updateAdminProfile(req, res) {
+    try {
+      // Validate required fields if needed
+      const { first_name, last_name, email, phone } = req.body;
+
+      // Optional: Add basic validation
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Please provide a valid email address',
+        });
+      }
+
+      if (phone && !/^[\+]?[0-9]{10,15}$/.test(phone.replace(/\s/g, ''))) {
+        return res.status(400).json({
+          success: false,
+          message: 'Please provide a valid phone number',
+        });
+      }
+
+      // Update user profile using existing service method
+      const updatedUser = await AuthService.updateUserProfile(
+        req.user.id,
+        req.body
+      );
+
+      // Get the complete updated profile
+      const completeProfile = await AuthService.getUserProfile(req.user.id);
+
       res.status(200).json({
         success: true,
-        message: 'Logout completed',
+        message: 'Admin profile updated successfully',
+        data: {
+          user: completeProfile,
+        },
+      });
+    } catch (error) {
+      console.error('Update admin profile controller error:', error.message);
+
+      // Handle specific Sequelize validation errors
+      if (error.name === 'SequelizeValidationError') {
+        const validationErrors = error.errors.map((err) => err.message);
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: validationErrors,
+        });
+      }
+
+      // Handle unique constraint errors (email/phone already exists)
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        const field = error.errors[0].path;
+        const message =
+          field === 'email'
+            ? 'Email address is already in use by another account'
+            : 'Phone number is already in use by another account';
+
+        return res.status(400).json({
+          success: false,
+          message: message,
+        });
+      }
+
+      // Handle custom service errors
+      if (error.message === 'User not found') {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found',
+        });
+      }
+
+      // Generic error response
+      res.status(500).json({
+        success: false,
+        message: 'Profile update failed. Please try again.',
+      });
+    }
+  }
+
+  // Change admin password (for admin settings page)
+  static async changeAdminPassword(req, res) {
+    try {
+      const { current_password, new_password, confirm_password } = req.body;
+
+      // Validate input
+      if (!current_password || !new_password || !confirm_password) {
+        return res.status(400).json({
+          success: false,
+          message: 'All password fields are required',
+        });
+      }
+
+      if (new_password !== confirm_password) {
+        return res.status(400).json({
+          success: false,
+          message: 'New passwords do not match',
+        });
+      }
+
+      if (new_password.length < 8) {
+        return res.status(400).json({
+          success: false,
+          message: 'Password must be at least 8 characters long',
+        });
+      }
+
+      // Use the existing service method
+      const result = await AuthService.changePassword(
+        req.user.id,
+        current_password,
+        new_password
+      );
+
+      res.status(200).json({
+        success: true,
+        message: result.message,
+      });
+    } catch (error) {
+      console.error('Change admin password controller error:', error.message);
+
+      // Handle specific errors
+      if (error.message === 'User not found') {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found',
+        });
+      }
+
+      if (error.message === 'Current password is incorrect') {
+        return res.status(400).json({
+          success: false,
+          message: 'Current password is incorrect',
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        message: 'Password change failed. Please try again.',
       });
     }
   }

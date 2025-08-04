@@ -13,14 +13,22 @@ class DriverJobService {
         offset = 0,
       } = filters;
 
-      // Get driver details with location
-      const driver = await Driver.findByPk(driverId, {
+      // Get driver details with ALL vehicles first
+      const driver = await Driver.findOne({
+        where: { id: driverId },
         include: [
           {
             model: Vehicle,
             as: 'vehicles',
-            where: { is_active: true },
-            attributes: ['vehicle_type', 'capacity_weight', 'capacity_volume'],
+            // Remove the where clause here to get all vehicles
+            attributes: [
+              'id',
+              'vehicle_type',
+              'capacity_weight',
+              'capacity_volume',
+              'is_active',
+            ],
+            required: false, // LEFT JOIN
           },
         ],
       });
@@ -33,6 +41,17 @@ class DriverJobService {
         throw new Error('Driver account not approved');
       }
 
+      // Filter for active vehicles after fetching
+      const activeVehicles =
+        driver.vehicles?.filter((v) => v.is_active === true) || [];
+
+      console.log('Driver vehicles:', driver.vehicles); // Debug log
+      console.log('Active vehicles:', activeVehicles); // Debug log
+
+      if (activeVehicles.length === 0) {
+        throw new Error('No active vehicles linked to this driver');
+      }
+
       if (driver.availability_status !== 'available') {
         return {
           jobs: [],
@@ -41,12 +60,9 @@ class DriverJobService {
         };
       }
 
-      // Get driver's vehicle types
-      const driverVehicleTypes = driver.vehicles.map((v) => v.vehicle_type);
-
-      if (driverVehicleTypes.length === 0) {
-        throw new Error('No active vehicles found for driver');
-      }
+      // Get driver's vehicle types from active vehicles
+      const driverVehicleTypes = activeVehicles.map((v) => v.vehicle_type);
+      console.log('Driver vehicle types:', driverVehicleTypes); // Debug log
 
       // Build where clause for available jobs
       let whereClause = {
@@ -62,6 +78,8 @@ class DriverJobService {
         vehicle_types.length > 0
           ? vehicle_types.filter((vt) => driverVehicleTypes.includes(vt))
           : driverVehicleTypes;
+
+      console.log('Allowed vehicle types:', allowedVehicleTypes); // Debug log
 
       whereClause.vehicle_type_required = {
         [Op.in]: allowedVehicleTypes,
@@ -88,6 +106,8 @@ class DriverJobService {
           ],
         };
       }
+
+      console.log('Job search where clause:', whereClause); // Debug log
 
       // Get available jobs
       const jobs = await Booking.findAndCountAll({
@@ -123,6 +143,8 @@ class DriverJobService {
           'created_at',
         ],
       });
+
+      console.log('Found jobs count:', jobs.count); // Debug log
 
       // Calculate distances if driver has location
       const jobsWithDistance = jobs.rows.map((job) => {

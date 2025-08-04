@@ -25,19 +25,46 @@ class DriverController {
     } catch (error) {
       console.error('Get available jobs controller error:', error.message);
 
-      if (
-        error.message.includes('not approved') ||
-        error.message.includes('not found') ||
-        error.message.includes('No active vehicles')
-      ) {
+      // Map specific errors to meaningful frontend-friendly codes
+      if (error.message.includes('Driver not found')) {
+        return res.status(404).json({
+          success: false,
+          code: 'DRIVER_NOT_FOUND',
+          message: 'Driver profile could not be found. Please contact support.',
+        });
+      }
+
+      if (error.message.includes('No active vehicles')) {
         return res.status(403).json({
           success: false,
+          code: 'NO_ACTIVE_VEHICLE',
+          message:
+            'No active vehicles are linked to this driver. Please add or activate a vehicle to continue.',
+        });
+      }
+
+      if (error.message.includes('not approved')) {
+        return res.status(403).json({
+          success: false,
+          code: 'DRIVER_NOT_APPROVED',
+          message:
+            'Your account is awaiting approval. Please wait until an admin approves your account.',
+        });
+      }
+
+      // Catch-all for other known logic errors
+      if (error.message.includes('Driver status is')) {
+        return res.status(200).json({
+          success: true,
+          data: { jobs: [], total: 0 },
           message: error.message,
         });
       }
 
+      // Default: unknown server error
       res.status(500).json({
         success: false,
+        code: 'SERVER_ERROR',
         message: 'Failed to fetch available jobs',
       });
     }

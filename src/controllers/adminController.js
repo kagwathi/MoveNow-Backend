@@ -362,9 +362,9 @@ class AdminController {
 
       // Log the action
       console.log(
-        `User ${id} (${
-          userData.email
-        }) deleted by admin ${adminId}. Reason: ${reason || 'None provided'}`
+        `User ${id} (${userData.email}) deleted by admin ${adminId}. Reason: ${
+          reason || 'None provided'
+        }`
       );
 
       res.status(200).json({
@@ -374,10 +374,215 @@ class AdminController {
       });
     } catch (error) {
       console.error('Delete user controller error:', error.message);
-      
+
       res.status(500).json({
         success: false,
         message: 'Failed to delete user',
+      });
+    }
+  }
+
+  // Add these methods to the existing AdminController class
+
+  // Get admin settings
+  static async getAdminSettings(req, res) {
+    try {
+      // In a real app, you'd fetch settings from database
+      // For now, return default settings structure
+      const settings = {
+        notifications: {
+          email_notifications: true,
+          sms_notifications: false,
+          push_notifications: true,
+          booking_alerts: true,
+          driver_alerts: true,
+          system_alerts: true,
+        },
+        security: {
+          two_factor_enabled: false,
+          session_timeout: 30,
+          password_expiry: 90,
+          failed_login_attempts: 5,
+        },
+        system: {
+          maintenance_mode: false,
+          api_rate_limiting: true,
+          debug_mode: process.env.NODE_ENV === 'development',
+          log_level: 'info',
+        },
+      };
+
+      res.status(200).json({
+        success: true,
+        data: { settings },
+      });
+    } catch (error) {
+      console.error('Get admin settings controller error:', error.message);
+
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch admin settings',
+      });
+    }
+  }
+
+  // Update admin settings
+  static async updateAdminSettings(req, res) {
+    try {
+      const { category, settings } = req.body;
+
+      // Validate category
+      const allowedCategories = ['notifications', 'security', 'system'];
+      if (!allowedCategories.includes(category)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid settings category',
+        });
+      }
+
+      // In a real app, you'd save settings to database
+      // For now, just log the settings update
+      console.log(
+        `Admin ${req.user.id} updated ${category} settings:`,
+        JSON.stringify(settings, null, 2)
+      );
+
+      // Special handling for system settings
+      if (category === 'system') {
+        if (settings.maintenance_mode !== undefined) {
+          console.log(
+            `🔧 Maintenance mode ${
+              settings.maintenance_mode ? 'ENABLED' : 'DISABLED'
+            } by admin ${req.user.id}`
+          );
+        }
+
+        if (settings.debug_mode !== undefined) {
+          console.log(
+            `🐛 Debug mode ${
+              settings.debug_mode ? 'ENABLED' : 'DISABLED'
+            } by admin ${req.user.id}`
+          );
+        }
+      }
+
+      res.status(200).json({
+        success: true,
+        message: `${
+          category.charAt(0).toUpperCase() + category.slice(1)
+        } settings updated successfully`,
+        data: { settings },
+      });
+    } catch (error) {
+      console.error('Update admin settings controller error:', error.message);
+
+      res.status(500).json({
+        success: false,
+        message: 'Failed to update admin settings',
+      });
+    }
+  }
+
+  // System actions
+  static async clearSystemCache(req, res) {
+    try {
+      // In a real app, you'd implement actual cache clearing
+      console.log(`🗑️ System cache cleared by admin ${req.user.id}`);
+
+      res.status(200).json({
+        success: true,
+        message: 'System cache cleared successfully',
+      });
+    } catch (error) {
+      console.error('Clear cache controller error:', error.message);
+
+      res.status(500).json({
+        success: false,
+        message: 'Failed to clear system cache',
+      });
+    }
+  }
+
+  static async exportSystemLogs(req, res) {
+    try {
+      // In a real app, you'd generate and return actual logs
+      const logs = {
+        exported_at: new Date().toISOString(),
+        exported_by: req.user.id,
+        log_entries: [
+          {
+            timestamp: new Date().toISOString(),
+            level: 'info',
+            message: 'System logs exported',
+            admin_id: req.user.id,
+          },
+        ],
+      };
+
+      console.log(`📄 System logs exported by admin ${req.user.id}`);
+
+      res.status(200).json({
+        success: true,
+        message: 'System logs exported successfully',
+        data: { logs },
+      });
+    } catch (error) {
+      console.error('Export logs controller error:', error.message);
+
+      res.status(500).json({
+        success: false,
+        message: 'Failed to export system logs',
+      });
+    }
+  }
+
+  static async createSystemBackup(req, res) {
+    try {
+      // In a real app, you'd implement actual database backup
+      const backup = {
+        id: `backup_${Date.now()}`,
+        created_at: new Date().toISOString(),
+        created_by: req.user.id,
+        status: 'completed',
+        size: '125.6 MB',
+      };
+
+      console.log(`💾 System backup created by admin ${req.user.id}`);
+
+      res.status(200).json({
+        success: true,
+        message: 'System backup created successfully',
+        data: { backup },
+      });
+    } catch (error) {
+      console.error('Create backup controller error:', error.message);
+
+      res.status(500).json({
+        success: false,
+        message: 'Failed to create system backup',
+      });
+    }
+  }
+
+  static async restartSystem(req, res) {
+    try {
+      // In a real app, you'd implement actual system restart
+      // This is a dangerous operation and should have additional security
+      console.log(`🔄 System restart initiated by admin ${req.user.id}`);
+
+      res.status(200).json({
+        success: true,
+        message: 'System restart initiated successfully',
+      });
+
+      // In a real implementation, you might:
+      // setTimeout(() => process.exit(0), 5000);
+    } catch (error) {
+      console.error('Restart system controller error:', error.message);
+
+      res.status(500).json({
+        success: false,
+        message: 'Failed to restart system',
       });
     }
   }

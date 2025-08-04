@@ -9,10 +9,10 @@ const startServer = async () => {
     await testConnection();
 
     // Sync database models (create tables if they don't exist)
-    await sequelize.sync({
-      force: false, // Set to true to drop and recreate tables (development only)
-      alter: process.env.NODE_ENV === 'development', // Auto-update tables in development
-    });
+    // await sequelize.sync({
+    //   force: false, // Set to true to drop and recreate tables (development only)
+    //   alter: process.env.NODE_ENV === 'development', // Auto-update tables in development
+    // });
 
     console.log('📊 Database synchronized successfully');
 

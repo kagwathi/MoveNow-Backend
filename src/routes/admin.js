@@ -54,4 +54,17 @@ router.post('/pricing/reset', AdminController.resetPricingConfig);
 // Reports
 router.get('/reports/:type', AdminController.generateReports);
 
+// Settings management
+router.get('/settings', AdminController.getAdminSettings);
+router.put('/settings', AdminController.updateAdminSettings);
+
+// System actions
+router.post('/system/clear-cache', AdminController.clearSystemCache);
+router.get('/system/logs/export', AdminController.exportSystemLogs);
+router.post('/system/backup', AdminController.createSystemBackup);
+router.post('/system/restart', AdminController.restartSystem);
+
+// System stats (already exists but included for completeness)
+router.get('/system/stats', AdminController.getSystemStats);
+
 export default router;

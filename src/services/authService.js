@@ -142,7 +142,7 @@ class AuthService {
         rating: 0.0,
         total_ratings: 0,
         total_trips: 0,
-        is_approved: false,
+        is_approved: null,
         approval_date: null,
         documents_verified: false,
       });
